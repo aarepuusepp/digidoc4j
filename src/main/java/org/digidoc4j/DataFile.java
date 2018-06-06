@@ -58,6 +58,7 @@ public class DataFile implements Serializable {
     try {
       document = new FileDocument(path);
       document.setMimeType(getMimeType(mimeType));
+      logger.debug("InMemoryDocument: BYTE ARRAY: getAbsolutePath" + ((DSSDocument) document).getAbsolutePath());
     } catch (Exception e) {
       logger.error(e.getMessage());
       throw new InvalidDataFileException(e);
@@ -75,6 +76,7 @@ public class DataFile implements Serializable {
     logger.debug("File name: " + fileName + ", mime type: " + mimeType);
     ByteArrayInputStream stream = new ByteArrayInputStream(data);
     document = new InMemoryDocument(stream, fileName, getMimeType(mimeType));
+    logger.debug("InMemoryDocument: BYTE ARRAY: length: " + ((InMemoryDocument) document).getBytes().length);
     IOUtils.closeQuietly(stream);
   }
 
@@ -86,9 +88,12 @@ public class DataFile implements Serializable {
    * @param mimeType MIME type of the stream file, for example 'text/plain' or 'application/msword'
    */
   public DataFile(InputStream stream, String fileName, String mimeType) {
-    logger.debug("File name: " + fileName + ", mime type: " + mimeType);
+    logger.debug("INPUTSTREAM... File name: " + fileName + ", mime type: " + mimeType);
     try {
+      byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(stream));
+      logger.debug("stream: BYTE ARRAY: length: " + byteArray.length);
       document = new InMemoryDocument(stream, fileName, getMimeType(mimeType));
+      logger.debug("InMemoryDocument: BYTE ARRAY: length: " + ((InMemoryDocument) document).getBytes().length);
     } catch (Exception e) {
       logger.error(e.getMessage());
       throw new InvalidDataFileException(e);
@@ -263,7 +268,7 @@ public class DataFile implements Serializable {
   public byte[] getBytes() {
     logger.debug("");
     try {
-      return IOUtils.toByteArray(document.openStream());
+      return IOUtils.toByteArray(IOUtils.toBufferedInputStream(document.openStream()));
     } catch (IOException e) {
       throw new TechnicalException("Error reading document bytes: " + e.getMessage(), e);
     }
@@ -275,7 +280,14 @@ public class DataFile implements Serializable {
    * @return data file stream
    */
   public InputStream getStream() {
-    logger.debug("");
+    logger.debug("Get Stream....");
+    try {
+      InputStream is = IOUtils.toBufferedInputStream(document.openStream());
+      byte[] byteArray = IOUtils.toByteArray(is);
+      logger.debug("BYTE ARRAY: length: " + byteArray.length);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     return document.openStream();
   }
 

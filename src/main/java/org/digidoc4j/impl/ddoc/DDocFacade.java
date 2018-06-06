@@ -179,6 +179,18 @@ public class DDocFacade implements SignatureFinalizer, Serializable {
     }
   }
 
+  public DataFile addDataFile(byte[] data, String fileName, String mimeType) {
+    logger.info("Adding data file: " + fileName + ", mime type: " + mimeType);
+    try {
+      ee.sk.digidoc.DataFile dataFile = new ee.sk.digidoc.DataFile(ddoc.getNewDataFileId(),
+          ee.sk.digidoc.DataFile.CONTENT_EMBEDDED_BASE64, fileName, mimeType, ddoc);
+      dataFile.setBody(data);
+      ddoc.addDataFile(dataFile);
+      return new DataFile(data, fileName, mimeType);
+    } catch (DigiDocException e) {
+      throw new DigiDoc4JException(e.getMessage(), e.getNestedException());
+    }
+  }
   public void addDataFile(DataFile dataFile) {
     addDataFile(dataFile.getStream(), dataFile.getName(), dataFile.getMediaType());
   }

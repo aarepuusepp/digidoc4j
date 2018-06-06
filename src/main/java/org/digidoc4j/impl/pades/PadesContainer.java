@@ -57,6 +57,11 @@ public class PadesContainer implements Container {
   }
 
   @Override
+  public DataFile addDataFile(byte[] byteArray, String fileName, String mimeType) {
+    throw new NotYetImplementedException();
+  }
+
+  @Override
   public DataFile addDataFile(File file, String mimeType) {
     throw new NotYetImplementedException();
   }

@@ -81,6 +81,11 @@ public class DDocContainer implements Container {
   }
 
   @Override
+  public DataFile addDataFile(byte[] byteArray, String fileName, String mimeType) {
+    return jDigiDocFacade.addDataFile(byteArray, fileName, mimeType);
+  }
+
+  @Override
   public DataFile addDataFile(File file, String mimeType) {
     return jDigiDocFacade.addDataFile(file.getPath(), mimeType);
   }

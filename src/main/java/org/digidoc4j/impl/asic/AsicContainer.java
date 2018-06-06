@@ -341,7 +341,16 @@ public abstract class AsicContainer implements Container {
 
   @Override
   public DataFile addDataFile(InputStream inputStream, String fileName, String mimeType) {
+    LOGGER.debug("New Datafile...");
     DataFile dataFile = new DataFile(inputStream, fileName, mimeType);
+    addDataFile(dataFile);
+    return dataFile;
+  }
+
+  @Override
+  public DataFile addDataFile(byte[] byteArray, String fileName, String mimeType) {
+    LOGGER.debug("New Datafile...");
+    DataFile dataFile = new DataFile(byteArray, fileName, mimeType);
     addDataFile(dataFile);
     return dataFile;
   }
@@ -356,6 +365,12 @@ public abstract class AsicContainer implements Container {
   @Override
   public void addDataFile(DataFile dataFile) {
     String fileName = dataFile.getName();
+    LOGGER.debug("filename: " + fileName);
+    try {
+      LOGGER.debug("BYTE ARRAY: length: " + IOUtils.toByteArray(IOUtils.toBufferedInputStream(dataFile.getStream())));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     verifyIfAllowedToAddDataFile(fileName);
     if (Constant.ASICS_CONTAINER_TYPE.equals(getType())) {
       if (dataFiles.size() > 1) {

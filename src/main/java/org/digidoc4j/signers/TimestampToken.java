@@ -1,6 +1,7 @@
 package org.digidoc4j.signers;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,6 +15,8 @@ import org.digidoc4j.DataFile;
 import org.digidoc4j.exceptions.DigiDoc4JException;
 import org.digidoc4j.impl.asic.SkDataLoader;
 import org.digidoc4j.utils.Helper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import eu.europa.esig.dss.DSSASN1Utils;
 import eu.europa.esig.dss.DSSUtils;
@@ -28,7 +31,7 @@ import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
  * Created by Andrei on 7.12.2017.
  */
 public final class TimestampToken {
-
+  private static final Logger logger = LoggerFactory.getLogger(TimestampToken.class);
   private TimestampToken() {
   }
 
@@ -97,14 +100,34 @@ public final class TimestampToken {
 
   private static byte[] getDigest(ContainerBuilder.ContainerDataFile dataFile) {
     try {
-      byte[] dataFileDigest;
-      if (!dataFile.isStream) {
-        Path path = Paths.get(dataFile.filePath);
-        dataFileDigest = Files.readAllBytes(path);
+      //byte[] dataFileDigest = new byte[0];
+      logger.debug("isStream: " + dataFile.isStream);
+      logger.debug("isByteArray: " + dataFile.isByteArray());
+      logger.debug("isDataFile: " + dataFile.isDataFile());
+
+      if(dataFile.isStream) {
+        logger.debug("DATAFILE is inputStream...");
+        byte[] dataFileDigest = IOUtils.toByteArray(dataFile.inputStream);
+        logger.debug("DATAFILE data length: " + dataFileDigest.length);
+        return dataFileDigest;
+      } else if(dataFile.isByteArray()){
+        logger.debug("DATAFILE is byte array...");
+        byte[] dataFileDigest = dataFile.filedata;
+        logger.debug("DATAFILE data length: " + dataFileDigest.length);
+        return dataFileDigest;
+      } else if(dataFile.isDataFile()){
+        logger.debug("DATAFILE is DataFile...");
+        byte[] dataFileDigest = dataFile.dataFile.getBytes();
+        logger.debug("DATAFILE data length: " + dataFileDigest.length);
+        return dataFileDigest;
       } else {
-        dataFileDigest = IOUtils.toByteArray(dataFile.inputStream);
+        logger.debug("DATAFILE is file... path: " + dataFile.filePath);
+        Path path = Paths.get(dataFile.filePath);
+        byte[] dataFileDigest = Files.readAllBytes(path);
+        logger.debug("DATAFILE data length: " + dataFileDigest.length);
+        return dataFileDigest;
       }
-      return dataFileDigest;
+
     } catch (IOException e) {
       e.printStackTrace();
     }

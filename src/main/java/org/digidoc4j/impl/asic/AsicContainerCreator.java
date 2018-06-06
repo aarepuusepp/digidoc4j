@@ -130,6 +130,14 @@ public class AsicContainerCreator {
       String name = dataFile.getName();
       logger.debug("Adding data file {}", name);
       zipOutputStream.setLevel(ZipEntry.DEFLATED);
+      logger.debug("MAKING STREAM CLONE...");
+      try {
+        //byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(dataFile.getStream()));
+
+        logger.debug("BYTE ARRAY: length: " + IOUtils.toByteArray(dataFile.getStream()));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
       new StreamEntryCallback(new ZipEntry(name), dataFile.getStream()).write();
     }
   }
@@ -213,6 +221,7 @@ public class AsicContainerCreator {
 
     BytesEntryCallback(ZipEntry entry, byte[] data) {
       super(entry);
+      logger.debug("DATA: " + data.length);
       this.data = data;
     }
 
@@ -243,6 +252,7 @@ public class AsicContainerCreator {
       }
 
       try {
+        logger.debug("Put next entry... " + entry.getName());
         zipOutputStream.putNextEntry(entry);
         doWithEntryStream(zipOutputStream);
         zipOutputStream.closeEntry();

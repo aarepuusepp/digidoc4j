@@ -11,12 +11,14 @@
 package org.digidoc4j;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.digidoc4j.exceptions.DigiDoc4JException;
 import org.digidoc4j.exceptions.InvalidDataFileException;
@@ -129,11 +131,15 @@ public abstract class ContainerBuilder {
    * @return fresh container.
    */
   public Container build() {
+    logger.debug("BUILD container..");
     if (shouldOpenContainerFromFile()) {
+      logger.debug("shouldOpenContainerFromFile... true");
       return openContainerFromFile();
     } else if (shouldOpenContainerFromStream()) {
+      logger.debug("shouldOpenContainerFromStream... true");
       return openContainerFromStream();
     }
+    logger.debug("CREATE NEW Container...");
     Container container = createNewContainer();
     addDataFilesToContainer(container);
     if (timeStampToken != null){
@@ -184,9 +190,27 @@ public abstract class ContainerBuilder {
         && !dataFiles.isEmpty()){
       throw new DigiDoc4JException("Cannot add second file in case of ASICS container");
     }
+    try {
+      byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(inputStream));
+      logger.debug("BYTE ARRAY: " + byteArray.length);
+
+    } catch (IOException e) {
+      logger.error(e.getMessage(), e);
+    }
     dataFiles.add(new ContainerDataFile(inputStream, fileName, mimeType));
     return this;
   }
+
+  public ContainerBuilder withDataFile(byte[] byteArray, String fileName, String mimeType) throws
+      InvalidDataFileException {
+    if (Constant.ASICS_CONTAINER_TYPE.equals(ContainerBuilder.containerType)
+        && !dataFiles.isEmpty()){
+      throw new DigiDoc4JException("Cannot add second file in case of ASICS container");
+    }
+    dataFiles.add(new ContainerDataFile(byteArray, fileName, mimeType));
+    return this;
+  }
+
 
   /**
    * Add a data file to the container.
@@ -294,12 +318,27 @@ public abstract class ContainerBuilder {
   }
 
   protected void addDataFilesToContainer(Container container) {
+    logger.debug("addDataFilesToContainer");
     for (ContainerDataFile file : dataFiles) {
+      logger.debug("isStream..." + file.isStream);
+      logger.debug("isDataFile..." + file.isDataFile());
       if (file.isStream) {
+        logger.debug("Add datafile from stream...");
+        try {
+          byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(file.inputStream));
+          logger.debug("BYTE ARRAY: " + byteArray.length);
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+        }
         container.addDataFile(file.inputStream, file.filePath, file.mimeType);
       } else if (file.isDataFile()) {
+        logger.debug("Add datafile from datafile...");
         container.addDataFile(file.dataFile);
+      } else if(file.isByteArray()){
+        logger.debug("Add datafile from byteArray...");
+        container.addDataFile(file.filedata, file.filePath, file.mimeType);
       } else {
+        logger.debug("Add datafile from filepath...");
         container.addDataFile(file.filePath, file.mimeType);
       }
     }
@@ -328,8 +367,9 @@ public abstract class ContainerBuilder {
     public String filePath;
     String mimeType;
     public InputStream inputStream;
-    DataFile dataFile;
+    public DataFile dataFile;
     public boolean isStream;
+    public byte[] filedata;
 
     public ContainerDataFile(String filePath, String mimeType) {
       this.filePath = filePath;
@@ -341,8 +381,24 @@ public abstract class ContainerBuilder {
     public ContainerDataFile(InputStream inputStream, String filePath, String mimeType) {
       this.filePath = filePath;
       this.mimeType = mimeType;
+      try {
+        byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(inputStream));
+        logger.debug("BYTE ARRAY: " + byteArray.length);
+        this.filedata = byteArray;
+      } catch (IOException e) {
+        logger.error(e.getMessage(), e);
+      }
       this.inputStream = inputStream;
       isStream = true;
+      validateDataFile();
+      validateFileName();
+    }
+
+    public ContainerDataFile(byte[] bytes, String filePath, String mimeType) {
+      this.filePath = filePath;
+      this.mimeType = mimeType;
+      this.isStream = false;
+      this.filedata = bytes;
       validateDataFile();
       validateFileName();
     }
@@ -350,6 +406,10 @@ public abstract class ContainerBuilder {
     public ContainerDataFile(DataFile dataFile) {
       this.dataFile = dataFile;
       isStream = false;
+    }
+
+    public boolean isByteArray(){
+      return filedata != null;
     }
 
     public boolean isDataFile() {
@@ -371,6 +431,10 @@ public abstract class ContainerBuilder {
             + " must not contain special characters like: "
             + Helper.SPECIAL_CHARACTERS);
       }
+    }
+
+    private void writeStreamToTmpFile(InputStream is){
+
     }
   }
 }
