@@ -334,6 +334,7 @@ public abstract class AsicContainer implements Container {
 
   @Override
   public DataFile addDataFile(String path, String mimeType) {
+    LOGGER.debug("New Datafile from file path...");
     DataFile dataFile = new DataFile(path, mimeType);
     addDataFile(dataFile);
     return dataFile;
@@ -341,7 +342,7 @@ public abstract class AsicContainer implements Container {
 
   @Override
   public DataFile addDataFile(InputStream inputStream, String fileName, String mimeType) {
-    LOGGER.debug("New Datafile...");
+    LOGGER.debug("New Datafile from inputstream...");
     DataFile dataFile = new DataFile(inputStream, fileName, mimeType);
     addDataFile(dataFile);
     return dataFile;
@@ -349,7 +350,7 @@ public abstract class AsicContainer implements Container {
 
   @Override
   public DataFile addDataFile(byte[] byteArray, String fileName, String mimeType) {
-    LOGGER.debug("New Datafile...");
+    LOGGER.debug("New Datafile from byte array...");
     DataFile dataFile = new DataFile(byteArray, fileName, mimeType);
     addDataFile(dataFile);
     return dataFile;
@@ -357,6 +358,7 @@ public abstract class AsicContainer implements Container {
 
   @Override
   public DataFile addDataFile(File file, String mimeType) {
+    LOGGER.debug("New Datafile from File...");
     DataFile dataFile = new DataFile(file.getPath(), mimeType);
     addDataFile(dataFile);
     return dataFile;
@@ -364,13 +366,10 @@ public abstract class AsicContainer implements Container {
 
   @Override
   public void addDataFile(DataFile dataFile) {
+    LOGGER.debug("New Datafile from DataFile...");
+
     String fileName = dataFile.getName();
     LOGGER.debug("filename: " + fileName);
-    try {
-      LOGGER.debug("BYTE ARRAY: length: " + IOUtils.toByteArray(IOUtils.toBufferedInputStream(dataFile.getStream())));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
     verifyIfAllowedToAddDataFile(fileName);
     if (Constant.ASICS_CONTAINER_TYPE.equals(getType())) {
       if (dataFiles.size() > 1) {

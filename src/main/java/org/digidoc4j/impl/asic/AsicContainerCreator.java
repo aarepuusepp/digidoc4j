@@ -130,14 +130,6 @@ public class AsicContainerCreator {
       String name = dataFile.getName();
       logger.debug("Adding data file {}", name);
       zipOutputStream.setLevel(ZipEntry.DEFLATED);
-      logger.debug("MAKING STREAM CLONE...");
-      try {
-        //byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(dataFile.getStream()));
-
-        logger.debug("BYTE ARRAY: length: " + IOUtils.toByteArray(dataFile.getStream()));
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
       new StreamEntryCallback(new ZipEntry(name), dataFile.getStream()).write();
     }
   }
@@ -160,7 +152,7 @@ public class AsicContainerCreator {
    * @param dataFile data file
    */
   public void writeTimestampToken(DataFile dataFile) {
-    logger.debug("Adding signatures to the asic zip container");
+    logger.debug("Adding timestamptoken signatures to the asic zip container");
     String signatureFileName = "META-INF/timestamp.tst";
     new BytesEntryCallback(new ZipEntry(signatureFileName), dataFile.getBytes()).write();
   }

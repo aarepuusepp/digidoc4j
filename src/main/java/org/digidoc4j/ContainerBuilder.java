@@ -190,13 +190,6 @@ public abstract class ContainerBuilder {
         && !dataFiles.isEmpty()){
       throw new DigiDoc4JException("Cannot add second file in case of ASICS container");
     }
-    try {
-      byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(inputStream));
-      logger.debug("BYTE ARRAY: " + byteArray.length);
-
-    } catch (IOException e) {
-      logger.error(e.getMessage(), e);
-    }
     dataFiles.add(new ContainerDataFile(inputStream, fileName, mimeType));
     return this;
   }
@@ -320,16 +313,7 @@ public abstract class ContainerBuilder {
   protected void addDataFilesToContainer(Container container) {
     logger.debug("addDataFilesToContainer");
     for (ContainerDataFile file : dataFiles) {
-      logger.debug("isStream..." + file.isStream);
-      logger.debug("isDataFile..." + file.isDataFile());
       if (file.isStream) {
-        logger.debug("Add datafile from stream...");
-        try {
-          byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(file.inputStream));
-          logger.debug("BYTE ARRAY: " + byteArray.length);
-        } catch (IOException e) {
-          logger.error(e.getMessage(), e);
-        }
         container.addDataFile(file.inputStream, file.filePath, file.mimeType);
       } else if (file.isDataFile()) {
         logger.debug("Add datafile from datafile...");
@@ -381,13 +365,6 @@ public abstract class ContainerBuilder {
     public ContainerDataFile(InputStream inputStream, String filePath, String mimeType) {
       this.filePath = filePath;
       this.mimeType = mimeType;
-      try {
-        byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(inputStream));
-        logger.debug("BYTE ARRAY: " + byteArray.length);
-        this.filedata = byteArray;
-      } catch (IOException e) {
-        logger.error(e.getMessage(), e);
-      }
       this.inputStream = inputStream;
       isStream = true;
       validateDataFile();

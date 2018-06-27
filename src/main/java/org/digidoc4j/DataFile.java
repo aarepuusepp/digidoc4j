@@ -58,7 +58,9 @@ public class DataFile implements Serializable {
     try {
       document = new FileDocument(path);
       document.setMimeType(getMimeType(mimeType));
-      logger.debug("InMemoryDocument: BYTE ARRAY: getAbsolutePath" + ((DSSDocument) document).getAbsolutePath());
+      if(logger.isDebugEnabled()){
+        logger.debug("InMemoryDocument: getAbsolutePath: " + ((DSSDocument) document).getAbsolutePath());
+      }
     } catch (Exception e) {
       logger.error(e.getMessage());
       throw new InvalidDataFileException(e);
@@ -76,7 +78,9 @@ public class DataFile implements Serializable {
     logger.debug("File name: " + fileName + ", mime type: " + mimeType);
     ByteArrayInputStream stream = new ByteArrayInputStream(data);
     document = new InMemoryDocument(stream, fileName, getMimeType(mimeType));
-    logger.debug("InMemoryDocument: BYTE ARRAY: length: " + ((InMemoryDocument) document).getBytes().length);
+    if(logger.isDebugEnabled()){
+      logger.debug("InMemoryDocument: BYTE ARRAY: length: " + ((InMemoryDocument) document).getBytes().length);
+    }
     IOUtils.closeQuietly(stream);
   }
 
@@ -90,10 +94,10 @@ public class DataFile implements Serializable {
   public DataFile(InputStream stream, String fileName, String mimeType) {
     logger.debug("INPUTSTREAM... File name: " + fileName + ", mime type: " + mimeType);
     try {
-      byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(stream));
-      logger.debug("stream: BYTE ARRAY: length: " + byteArray.length);
-      document = new InMemoryDocument(byteArray, fileName, getMimeType(mimeType));
-      logger.debug("InMemoryDocument: BYTE ARRAY: length: " + ((InMemoryDocument) document).getBytes().length);
+      document = new InMemoryDocument(stream, fileName, getMimeType(mimeType));
+      if(logger.isDebugEnabled()) {
+        logger.debug("InMemoryDocument: BYTE ARRAY: length: " + ((InMemoryDocument) document).getBytes().length);
+      }
     } catch (Exception e) {
       logger.error(e.getMessage());
       throw new InvalidDataFileException(e);
@@ -110,7 +114,7 @@ public class DataFile implements Serializable {
   protected MimeType getMimeType(String mimeType) {
     try {
       MimeType mimeTypeCode = MimeType.fromMimeTypeString(mimeType);
-      logger.debug("Mime type: ", mimeTypeCode);
+      logger.debug("Mime type: {}", mimeTypeCode);
       return mimeTypeCode;
     } catch (DSSException e) {
       logger.error(e.getMessage());
@@ -127,7 +131,7 @@ public class DataFile implements Serializable {
    * @throws Exception thrown if the file does not exist or the digest calculation fails.
    */
   public byte[] calculateDigest() throws Exception {
-    logger.debug("");
+    logger.debug("calculateDigest()....");
     return calculateDigest(new URL("http://www.w3.org/2001/04/xmlenc#sha256"));
   }
 
@@ -281,13 +285,6 @@ public class DataFile implements Serializable {
    */
   public InputStream getStream() {
     logger.debug("Get Stream....");
-    try {
-      InputStream is = IOUtils.toBufferedInputStream(document.openStream());
-      byte[] byteArray = IOUtils.toByteArray(is);
-      logger.debug("BYTE ARRAY: length: " + byteArray.length);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
     return document.openStream();
   }
 
