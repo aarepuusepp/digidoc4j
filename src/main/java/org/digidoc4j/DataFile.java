@@ -92,7 +92,7 @@ public class DataFile implements Serializable {
     try {
       byte[] byteArray = IOUtils.toByteArray(IOUtils.toBufferedInputStream(stream));
       logger.debug("stream: BYTE ARRAY: length: " + byteArray.length);
-      document = new InMemoryDocument(stream, fileName, getMimeType(mimeType));
+      document = new InMemoryDocument(byteArray, fileName, getMimeType(mimeType));
       logger.debug("InMemoryDocument: BYTE ARRAY: length: " + ((InMemoryDocument) document).getBytes().length);
     } catch (Exception e) {
       logger.error(e.getMessage());
