@@ -62,7 +62,7 @@ public class DDocContainer implements Container {
 
   @Override
   public DataFile addDataFile(byte[] byteArray, String fileName, String mimeType) {
-    return jDigiDocFacade.addDataFile(byteArray, fileName, mimeType);
+    throw new NotSupportedException("Adding new data files is not supported anymore for DDoc!");
   }
 
   @Override

@@ -4,8 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ddoc4j/ddoc4j.iml" filepath="$PROJECT_DIR$/ddoc4j/ddoc4j.iml" />
       <module fileurl="file://$PROJECT_DIR$/digidoc4j/digidoc4j.iml" filepath="$PROJECT_DIR$/digidoc4j/digidoc4j.iml" />
-      <module fileurl="file://$PROJECT_DIR$/digidoc4j/digidoc4j.iml" filepath="$PROJECT_DIR$/digidoc4j/digidoc4j.iml" />
-      <module fileurl="file://$PROJECT_DIR$/digidoc4j-parent.iml" filepath="$PROJECT_DIR$/digidoc4j-parent.iml" />
       <module fileurl="file://$PROJECT_DIR$/digidoc4j-parent.iml" filepath="$PROJECT_DIR$/digidoc4j-parent.iml" />
     </modules>
   </component>
