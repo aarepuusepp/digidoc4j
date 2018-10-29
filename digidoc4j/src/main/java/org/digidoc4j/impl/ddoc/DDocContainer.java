@@ -30,7 +30,6 @@ import org.digidoc4j.SignatureProfile;
 import org.digidoc4j.SignatureToken;
 import org.digidoc4j.SignedInfo;
 import org.digidoc4j.exceptions.NotSupportedException;
-import org.digidoc4j.signers.TimestampToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

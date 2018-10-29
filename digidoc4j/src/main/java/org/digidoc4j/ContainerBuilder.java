@@ -194,6 +194,15 @@ public abstract class ContainerBuilder {
     return this;
   }
 
+  /**
+   * Add a data file from byte array to the container.
+   *
+   * @param byteArray byte array of a data file to be added to the container
+   * @param fileName name of the data file to be added.
+   * @param mimeType MIME type of the data file, for example 'text/plain' or 'application/msword'
+   * @return builder for creating or opening a container.
+   * @throws InvalidDataFileException
+   */
   public ContainerBuilder withDataFile(byte[] byteArray, String fileName, String mimeType) throws
       InvalidDataFileException {
     if (Constant.ASICS_CONTAINER_TYPE.equals(ContainerBuilder.containerType)
@@ -408,10 +417,6 @@ public abstract class ContainerBuilder {
             + " must not contain special characters like: "
             + Helper.SPECIAL_CHARACTERS);
       }
-    }
-
-    private void writeStreamToTmpFile(InputStream is){
-
     }
   }
 }

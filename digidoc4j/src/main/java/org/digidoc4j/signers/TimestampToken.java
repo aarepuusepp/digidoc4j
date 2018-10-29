@@ -1,7 +1,6 @@
 package org.digidoc4j.signers;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -100,7 +99,6 @@ public final class TimestampToken {
 
   private static byte[] getDigest(ContainerBuilder.ContainerDataFile dataFile) {
     try {
-      //byte[] dataFileDigest = new byte[0];
       logger.debug("isStream: " + dataFile.isStream);
       logger.debug("isByteArray: " + dataFile.isByteArray());
       logger.debug("isDataFile: " + dataFile.isDataFile());
@@ -108,23 +106,23 @@ public final class TimestampToken {
       if(dataFile.isStream) {
         logger.debug("DATAFILE is inputStream...");
         byte[] dataFileDigest = IOUtils.toByteArray(dataFile.inputStream);
-        logger.debug("DATAFILE data length: " + dataFileDigest.length);
+        logger.debug("DATAFILE data length: " + (dataFileDigest != null ? dataFileDigest.length : "NULL"));
         return dataFileDigest;
       } else if(dataFile.isByteArray()){
         logger.debug("DATAFILE is byte array...");
         byte[] dataFileDigest = dataFile.filedata;
-        logger.debug("DATAFILE data length: " + dataFileDigest.length);
+        logger.debug("DATAFILE data length: " + (dataFileDigest != null ? dataFileDigest.length : "NULL"));
         return dataFileDigest;
       } else if(dataFile.isDataFile()){
         logger.debug("DATAFILE is DataFile...");
         byte[] dataFileDigest = dataFile.dataFile.getBytes();
-        logger.debug("DATAFILE data length: " + dataFileDigest.length);
+        logger.debug("DATAFILE data length: " + (dataFileDigest != null ? dataFileDigest.length : "NULL"));
         return dataFileDigest;
       } else {
-        logger.debug("DATAFILE is file... path: " + dataFile.filePath);
+        logger.debug("DATAFILE is file... path: " + (dataFile != null ? dataFile.filePath : "NULL"));
         Path path = Paths.get(dataFile.filePath);
         byte[] dataFileDigest = Files.readAllBytes(path);
-        logger.debug("DATAFILE data length: " + dataFileDigest.length);
+        logger.debug("DATAFILE data length: " + (dataFileDigest != null ? dataFileDigest.length : "NULL"));
         return dataFileDigest;
       }
 

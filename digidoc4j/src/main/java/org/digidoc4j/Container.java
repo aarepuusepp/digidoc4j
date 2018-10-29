@@ -60,6 +60,18 @@ public interface Container extends Serializable {
    */
   DataFile addDataFile(InputStream is, String fileName, String mimeType);
 
+  /**
+   * Adds a data file from the byte array.
+   * <p>
+   * Note:
+   * Data files can be added to a container only after all signatures have been removed.
+   * </p>
+   *
+   * @param byteArray byte array of data file to be added to the container
+   * @param fileName data file name in the container
+   * @param mimeType MIME type of the data file, for example 'text/plain' or 'application/msword'
+   * @return data file
+   */
   DataFile addDataFile(byte[] byteArray, String fileName, String mimeType);
   /**
    * Adds a data file from the file system to the container.

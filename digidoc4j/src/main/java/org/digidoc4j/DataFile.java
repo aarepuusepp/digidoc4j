@@ -58,9 +58,6 @@ public class DataFile implements Serializable {
     try {
       document = new FileDocument(path);
       document.setMimeType(getMimeType(mimeType));
-      if(logger.isDebugEnabled()){
-        logger.debug("InMemoryDocument: getAbsolutePath: " + ((DSSDocument) document).getAbsolutePath());
-      }
     } catch (Exception e) {
       logger.error(e.getMessage());
       throw new InvalidDataFileException(e);
@@ -78,9 +75,6 @@ public class DataFile implements Serializable {
     logger.debug("File name: " + fileName + ", mime type: " + mimeType);
     ByteArrayInputStream stream = new ByteArrayInputStream(data);
     document = new InMemoryDocument(stream, fileName, getMimeType(mimeType));
-    if(logger.isDebugEnabled()){
-      logger.debug("InMemoryDocument: BYTE ARRAY: length: " + ((InMemoryDocument) document).getBytes().length);
-    }
     IOUtils.closeQuietly(stream);
   }
 
@@ -95,9 +89,6 @@ public class DataFile implements Serializable {
     logger.debug("INPUTSTREAM... File name: " + fileName + ", mime type: " + mimeType);
     try {
       document = new InMemoryDocument(stream, fileName, getMimeType(mimeType));
-      if(logger.isDebugEnabled()) {
-        logger.debug("InMemoryDocument: BYTE ARRAY: length: " + ((InMemoryDocument) document).getBytes().length);
-      }
     } catch (Exception e) {
       logger.error(e.getMessage());
       throw new InvalidDataFileException(e);
