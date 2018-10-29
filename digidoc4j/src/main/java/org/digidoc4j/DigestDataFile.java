@@ -1,17 +1,19 @@
 package org.digidoc4j;
 
-import java.util.Arrays;
-
+import eu.europa.esig.dss.DigestDocument;
 import org.apache.commons.codec.binary.Base64;
 import org.digidoc4j.exceptions.InvalidDataFileException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.europa.esig.dss.DigestDocument;
+import java.util.Arrays;
 
 public class DigestDataFile extends DataFile {
 
   private static final Logger logger = LoggerFactory.getLogger(DigestDataFile.class);
+
+
+  private String contentType = null;
 
   /**
    * Creates digest based data file.
@@ -35,4 +37,12 @@ public class DigestDataFile extends DataFile {
     }
   }
 
+
+  public String getContentType() {
+    return contentType;
+  }
+
+  public void setContentType(String contentType) {
+    this.contentType = contentType;
+  }
 }

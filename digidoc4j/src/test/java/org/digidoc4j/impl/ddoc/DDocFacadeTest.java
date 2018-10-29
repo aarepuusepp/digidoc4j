@@ -10,18 +10,10 @@
 
 package org.digidoc4j.impl.ddoc;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Paths;
-import java.util.List;
-
-import org.digidoc4j.AbstractTest;
-import org.digidoc4j.Configuration;
-import org.digidoc4j.Container;
-import org.digidoc4j.DataFile;
+import org.digidoc4j.*;
+import org.digidoc4j.ddoc.DigiDocException;
+import org.digidoc4j.ddoc.SignedDoc;
+import org.digidoc4j.ddoc.utils.ConfigManager;
 import org.digidoc4j.exceptions.ConfigurationException;
 import org.digidoc4j.exceptions.DigiDoc4JException;
 import org.digidoc4j.exceptions.NotSupportedException;
@@ -31,8 +23,9 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import org.digidoc4j.ddoc.DigiDocException;
-import org.digidoc4j.ddoc.SignedDoc;
+import java.io.*;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class DDocFacadeTest extends AbstractTest {
 
@@ -47,6 +40,37 @@ public class DDocFacadeTest extends AbstractTest {
     DDocFacade facade = openDDocFacade("src/test/resources/testFiles/valid-containers/ddoc_for_testing.ddoc");
     DataFile dataFile = facade.getDataFiles().get(0);
     Assert.assertEquals(16, dataFile.getFileSize());
+  }
+
+  @Test
+  public void testGetHashCodeDataFile(){
+    ConfigManager.init("src/test/resources/testFiles/yaml-configurations/digidoc_test_conf_hashcode_mode.yaml");
+    DDocFacade facade = openDDocFacade("src/test/resources/prodFiles/valid-containers/DIGIDOC-XML1.3_hashcode.ddoc");
+    DigestDataFile dataFile = (DigestDataFile)facade.getDataFiles().get(0);
+    Assert.assertEquals("Glitter-rock-4_gallery.jpg", dataFile.getName());
+    Assert.assertEquals("HASHCODE", dataFile.getContentType());
+    ConfigManager.init(Configuration.getInstance().getDDoc4JConfiguration());
+  }
+
+  @Test
+  public void testRemoveDuplicatesExceptions(){
+    DDocFacade facade = openDDocFacade("src/test/resources/prodFiles/invalid-containers/23060-1.ddoc");
+    ContainerValidationResult result = facade.validate();
+    Assert.assertEquals(1, result.getContainerErrors().size());
+    Assert.assertEquals(21, result.getContainerErrors().get(0).getErrorCode());
+    Assert.assertEquals("Invalid digest length", result.getContainerErrors().get(0).getMessage());
+    Assert.assertEquals(2, result.getErrors().size());
+    Assert.assertEquals(21, result.getErrors().get(0).getErrorCode());
+    Assert.assertEquals("Invalid digest length", result.getErrors().get(0).getMessage());
+    Assert.assertEquals(79, result.getErrors().get(1).getErrorCode());
+    Assert.assertEquals("Bad digest for SignedProperties: S0-SignedProperties", result.getErrors().get(1).getMessage());
+  }
+
+  @Test
+  public void testValidateNoDuplicateExceptions() {
+      DDocFacade facade = openDDocFacade("src/test/resources/prodFiles/invalid-containers/Belgia_kandeavaldus_LIV.ddoc");
+      ContainerValidationResult result = facade.validate();
+      Assert.assertEquals(3, result.getErrors().size());
   }
 
   @Test
