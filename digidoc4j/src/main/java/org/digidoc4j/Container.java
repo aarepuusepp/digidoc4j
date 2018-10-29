@@ -17,6 +17,8 @@ import java.io.Serializable;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import org.bouncycastle.tsp.TimeStampToken;
+
 import eu.europa.esig.dss.MimeType;
 
 /**
@@ -162,6 +164,13 @@ public interface Container extends Serializable {
    * @param timeStampToken
    */
   void setTimeStampToken(DataFile timeStampToken);
+
+  /**
+   * Returns timestamp token
+   *
+   * @return TimestampToken
+   */
+  TimeStampToken getTimeStampToken();
 
   //Deprecated methods below
 

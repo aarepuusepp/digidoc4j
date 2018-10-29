@@ -8,6 +8,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bouncycastle.tsp.TimeStampToken;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.Container;
 import org.digidoc4j.ContainerValidationResult;
@@ -141,6 +142,11 @@ public class PadesContainer implements Container {
 
   @Override
   public void setTimeStampToken(DataFile timeStampToken) {
+    throw new NotSupportedException("Not for Pades container");
+  }
+
+  @Override
+  public TimeStampToken getTimeStampToken() {
     throw new NotSupportedException("Not for Pades container");
   }
 

@@ -13,6 +13,8 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.tsp.TimeStampToken;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.Constant;
 import org.digidoc4j.Container;
@@ -399,6 +401,17 @@ public abstract class AsicContainer implements Container {
    */
   public void setTimeStampToken(DataFile timeStampToken) {
     this.timeStampToken = timeStampToken;
+  }
+
+
+  @Override
+  public TimeStampToken getTimeStampToken() {
+    try{
+      return new TimeStampToken(new CMSSignedData(timeStampToken.getBytes()));
+    } catch (Exception e){
+      LOGGER.error("TIMESTAMP TOKEN PARSE FAILED! " + e.getMessage());
+      throw new DigiDoc4JException(e);
+    }
   }
 
   private void validateSignatureId(Signature signature) {

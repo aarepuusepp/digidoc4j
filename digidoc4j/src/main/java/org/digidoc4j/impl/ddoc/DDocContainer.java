@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import org.bouncycastle.tsp.TimeStampToken;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.Container;
 import org.digidoc4j.ContainerValidationResult;
@@ -29,6 +30,7 @@ import org.digidoc4j.SignatureProfile;
 import org.digidoc4j.SignatureToken;
 import org.digidoc4j.SignedInfo;
 import org.digidoc4j.exceptions.NotSupportedException;
+import org.digidoc4j.signers.TimestampToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,6 +137,12 @@ public class DDocContainer implements Container {
   public void setTimeStampToken(DataFile timeStampToken) {
     throw new NotSupportedException("Not for DDOC container");
   }
+
+  @Override
+  public TimeStampToken getTimeStampToken() {
+    throw new NotSupportedException("Not for DDOC container");
+  }
+
 
   /**
    * Prepare signature.

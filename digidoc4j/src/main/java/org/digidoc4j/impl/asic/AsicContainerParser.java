@@ -101,21 +101,27 @@ public abstract class AsicContainerParser {
     String entryName = entry.getName();
     logger.debug("Paring zip entry " + entryName + " with comment: " + entry.getComment());
     if (isMimeType(entryName)) {
+      logger.debug("Extract MIME-TYPE..." + entryName);
       extractMimeType(entry);
     } else if (isManifest(entryName)) {
+      logger.debug("Extract MANIFEST..." + entryName);
       if (this.manifestFound) {
         throw new DigiDoc4JException("Multiple manifest.xml files disallowed");
       }
       this.manifestFound = true;
       extractManifest(entry);
     } else if (isSignaturesFile(entryName)) {
+      logger.debug("Extract SIGNATURE...." + entryName);
       determineCurrentSignatureFileIndex(entryName);
       extractSignature(entry);
     } else if (isDataFile(entryName)) {
+      logger.debug("Extract DATA FILE: " + entryName);
       extractDataFile(entry);
     } else if (isTimeStampToken(entryName)) {
+      logger.debug("Extract TIMESTAMP TOKEN: " + entryName);
       extractTimeStamp(entry);
     } else {
+      logger.debug("Extrac ASIC entry... (ZIP)");
       extractAsicEntry(entry);
     }
   }
