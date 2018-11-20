@@ -10,28 +10,8 @@
 
 package org.digidoc4j;
 
-import static java.util.Arrays.asList;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-
+import com.sun.javafx.binding.StringConstant;
+import eu.europa.esig.dss.client.http.Protocol;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -43,7 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
-import eu.europa.esig.dss.client.http.Protocol;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+
+import static java.util.Arrays.asList;
 
 /**
  * Possibility to create custom configurations for {@link Container} implementations.
@@ -150,6 +136,8 @@ import eu.europa.esig.dss.client.http.Protocol;
  * ASN.1 BER encoding rules for an INTEGER as described in:
  * {@link https://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf. }
  * NB! Strict Validation applied by default.</li>
+ * <li>ALLOWED_OCSP_RESPONDERS_FOR_TM: whitelist of OCSP responders for timemark validation
+ * (for example, SK OCSP RESPONDER 2011, ESTEID-SK OCSP RESPONDER, KLASS3-SK OCSP RESPONDER)</li>
  * </ul>
  */
 public class Configuration implements Serializable {
@@ -1081,6 +1069,25 @@ public class Configuration implements Serializable {
   }
 
   /**
+   * Set allowed OCSP responders common names for timemark validation.
+   * For example: "SK OCSP RESPONDER 2011", "ESTEID-SK OCSP RESPONDER", "KLASS3-SK OCSP RESPONDER".
+   *
+   * @param allowedOcspRespondersForTM list of OCSP responders.
+   */
+  public void setAllowedOcspRespondersForTM(String... allowedOcspRespondersForTM) {
+    this.setConfigurationParameter(ConfigurationParameter.AllowedOcspRespondersForTM, allowedOcspRespondersForTM);
+  }
+
+  /**
+   * Get allowed OCSP responders for timemark validation.
+   *
+   * @return ocsp responders list.
+   */
+  public List<String> getAllowedOcspRespondersForTM() {
+    return this.getConfigurationValues(ConfigurationParameter.AllowedOcspRespondersForTM);
+  }
+
+  /**
    * @return true when configuration is Configuration.Mode.TEST
    * @see Configuration.Mode#TEST
    */
@@ -1154,6 +1161,8 @@ public class Configuration implements Serializable {
       this.setConfigurationParameter(ConfigurationParameter.SignOcspRequests, "false");
       this.setConfigurationParameter(ConfigurationParameter.PrintValidationReport, "true");
       this.setDDoc4JParameter("SIGN_OCSP_REQUESTS", "false");
+      setDDoc4JParameter("ALLOWED_OCSP_RESPONDERS_FOR_TM", StringUtils.join(Constant.Test.DEFAULT_OCSP_RESPONDERS, ","));
+      this.setConfigurationParameter(ConfigurationParameter.AllowedOcspRespondersForTM, Constant.Test.DEFAULT_OCSP_RESPONDERS);
     } else {
       this.setConfigurationParameter(ConfigurationParameter.TspSource, Constant.Production.TSP_SOURCE);
       this.setConfigurationParameter(ConfigurationParameter.TslLocation, Constant.Production.TSL_LOCATION);
@@ -1165,6 +1174,9 @@ public class Configuration implements Serializable {
       this.setConfigurationParameter(ConfigurationParameter.PrintValidationReport, "false");
       this.trustedTerritories = Constant.Production.DEFAULT_TRUESTED_TERRITORIES;
       this.setDDoc4JParameter("SIGN_OCSP_REQUESTS", "false");
+      setDDoc4JParameter("ALLOWED_OCSP_RESPONDERS_FOR_TM", StringUtils.join(Constant.Production.DEFAULT_OCSP_RESPONDERS, ","));
+      this.setConfigurationParameter(ConfigurationParameter.AllowedOcspRespondersForTM, Constant.Production.DEFAULT_OCSP_RESPONDERS);
+
     }
     LOGGER.debug("{} configuration: {}", this.mode, this.registry);
     this.loadInitialConfigurationValues();
@@ -1237,6 +1249,7 @@ public class Configuration implements Serializable {
         this.getParameter(Constant.System.JAVAX_NET_SSL_TRUST_STORE_PASSWORD, "SSL_TRUSTSTORE_PASSWORD"));
     this.setConfigurationParameter(ConfigurationParameter.AllowASN1UnsafeInteger, this.getParameter(Constant
         .System.ORG_BOUNCYCASTLE_ASN1_ALLOW_UNSAFE_INTEGER, "ALLOW_UNSAFE_INTEGER"));
+    this.loadYamlOcspResponders();
     this.loadYamlTrustedTerritories();
     this.loadYamlTSPs();
     this.postLoad();
@@ -1246,6 +1259,8 @@ public class Configuration implements Serializable {
     String allowASN1UnsafeInteger = this.getConfigurationParameter(ConfigurationParameter.AllowASN1UnsafeInteger);
     if (!StringUtils.isEmpty(allowASN1UnsafeInteger)) {
         System.setProperty(Constant.System.ORG_BOUNCYCASTLE_ASN1_ALLOW_UNSAFE_INTEGER, allowASN1UnsafeInteger);
+    } else {
+        this.setConfigurationParameter(ConfigurationParameter.AllowASN1UnsafeInteger, "true");
     }
   }
 
@@ -1446,6 +1461,15 @@ public class Configuration implements Serializable {
     }
   }
 
+  private void loadYamlOcspResponders(){
+    List<String> responders = getStringListParameterFromFile("ALLOWED_OCSP_RESPONDERS_FOR_TM");
+    if (responders != null) {
+      String[] respondersValue = responders.toArray(new String[0]);
+      this.setConfigurationParameter(ConfigurationParameter.AllowedOcspRespondersForTM, respondersValue);
+      this.setDDoc4JDocConfigurationValue("ALLOWED_OCSP_RESPONDERS_FOR_TM", StringUtils.join(respondersValue, ","));
+    }
+  }
+
   private void loadYamlTrustedTerritories() {
     List<String> territories = getStringListParameterFromFile("TRUSTED_TERRITORIES");
     if (territories != null) {
@@ -1533,13 +1557,13 @@ public class Configuration implements Serializable {
     return (ArrayList<String>) digiDocCa.get("CERTS");
   }
 
-  private void setConfigurationParameter(ConfigurationParameter parameter, String value) {
-    if (StringUtils.isBlank(value)) {
+  private void setConfigurationParameter(ConfigurationParameter parameter, String... value) {
+    if (StringUtils.isAllBlank(value)) {
       LOGGER.debug("Parameter <{}> has blank value, hence will not be registered", parameter);
       return;
     }
     LOGGER.debug("Setting parameter <{}> to <{}>", parameter, value);
-    this.registry.put(parameter, value);
+    this.registry.put(parameter, Arrays.asList(value));
   }
 
   private <T> T getConfigurationParameter(ConfigurationParameter parameter, Class<T> clazz) {
@@ -1562,9 +1586,19 @@ public class Configuration implements Serializable {
       LOGGER.debug("Requested parameter <{}> not found", parameter);
       return null;
     }
-    String value = this.registry.get(parameter);
+    String value = this.registry.get(parameter).get(0);
     LOGGER.debug("Requesting parameter <{}>. Returned value is <{}>", parameter, value);
     return value;
+  }
+
+  private List<String> getConfigurationValues(ConfigurationParameter parameter) {
+    if (!this.registry.containsKey(parameter)) {
+      LOGGER.debug("Requested parameter <{}> not found", parameter);
+      return null;
+    }
+    List<String> values = this.registry.get(parameter);
+    LOGGER.debug("Requesting parameter <{}>. Returned value is <{}>", parameter, values);
+    return values;
   }
 
   private void initOcspAccessCertPasswordForDDoc4J() {

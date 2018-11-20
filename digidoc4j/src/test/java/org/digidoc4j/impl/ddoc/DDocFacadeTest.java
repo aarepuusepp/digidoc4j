@@ -19,6 +19,7 @@ import org.digidoc4j.exceptions.DigiDoc4JException;
 import org.digidoc4j.exceptions.NotSupportedException;
 import org.digidoc4j.test.MockConfigManagerInitializer;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
@@ -43,17 +44,17 @@ public class DDocFacadeTest extends AbstractTest {
   }
 
   @Test
-  public void testGetHashCodeDataFile(){
+  public void testGetHashCodeDataFile() {
     ConfigManager.init("src/test/resources/testFiles/yaml-configurations/digidoc_test_conf_hashcode_mode.yaml");
     DDocFacade facade = openDDocFacade("src/test/resources/prodFiles/valid-containers/DIGIDOC-XML1.3_hashcode.ddoc");
-    DigestDataFile dataFile = (DigestDataFile)facade.getDataFiles().get(0);
+    DigestDataFile dataFile = (DigestDataFile) facade.getDataFiles().get(0);
     Assert.assertEquals("Glitter-rock-4_gallery.jpg", dataFile.getName());
     Assert.assertEquals("HASHCODE", dataFile.getContentType());
     ConfigManager.init(Configuration.getInstance().getDDoc4JConfiguration());
   }
 
   @Test
-  public void testRemoveDuplicatesExceptions(){
+  public void testRemoveDuplicatesExceptions() {
     DDocFacade facade = openDDocFacade("src/test/resources/prodFiles/invalid-containers/23060-1.ddoc");
     ContainerValidationResult result = facade.validate();
     Assert.assertEquals(1, result.getContainerErrors().size());
@@ -68,9 +69,9 @@ public class DDocFacadeTest extends AbstractTest {
 
   @Test
   public void testValidateNoDuplicateExceptions() {
-      DDocFacade facade = openDDocFacade("src/test/resources/prodFiles/invalid-containers/Belgia_kandeavaldus_LIV.ddoc");
-      ContainerValidationResult result = facade.validate();
-      Assert.assertEquals(3, result.getErrors().size());
+    DDocFacade facade = openDDocFacade("src/test/resources/prodFiles/invalid-containers/Belgia_kandeavaldus_LIV.ddoc");
+    ContainerValidationResult result = facade.validate();
+    Assert.assertEquals(3, result.getErrors().size());
   }
 
   @Test
@@ -133,7 +134,7 @@ public class DDocFacadeTest extends AbstractTest {
   @Test
   public void ddocStreamOpener() throws IOException {
     try (FileInputStream stream = new FileInputStream(
-        new File("src/test/resources/testFiles/valid-containers/ddoc_wo_x509IssueName_xmlns.ddoc"))) {
+            new File("src/test/resources/testFiles/valid-containers/ddoc_wo_x509IssueName_xmlns.ddoc"))) {
       DDocContainer container = new DDocOpener().open(stream);
       Assert.assertTrue(container.validate().isValid());
     }
@@ -200,6 +201,12 @@ public class DDocFacadeTest extends AbstractTest {
 
   private DDocFacade openDDocFacade(String path) {
     return new DDocOpener().open(path).getDDoc4JFacade();
+  }
+
+  @Before
+  public void beforeMethod() {
+    this.configuration = Configuration.of(Configuration.Mode.PROD);
+    ConfigManagerInitializer.forceInitConfigManager(this.configuration);
   }
 
 }
