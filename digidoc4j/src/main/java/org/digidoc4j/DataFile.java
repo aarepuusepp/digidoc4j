@@ -263,7 +263,7 @@ public class DataFile implements Serializable {
   public byte[] getBytes() {
     logger.debug("");
     try {
-      return IOUtils.toByteArray(IOUtils.toBufferedInputStream(document.openStream()));
+      return IOUtils.toByteArray(document.openStream());
     } catch (IOException e) {
       throw new TechnicalException("Error reading document bytes: " + e.getMessage(), e);
     }
