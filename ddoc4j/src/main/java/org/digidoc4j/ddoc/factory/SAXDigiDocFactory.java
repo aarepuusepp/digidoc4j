@@ -2104,9 +2104,6 @@ public class SAXDigiDocFactory
                 //	m_logger.debug("IN:\n---\n" + s + "\n---\nCollected:\n---\n" + m_sbCollectItem.toString() + "\n---\n");
             }
             if (m_sbCollectChars != null) {
-                //m_sbCollectChars.append(s);
-                if(m_logger.isDebugEnabled() && m_sbCollectChars.indexOf("SignedInfo") != -1)
-                    m_logger.debug("IN: \'" + s + "\' escaped: \'" + ConvertUtils.escapeTextNode(s) + "\'");
                 m_sbCollectChars.append(ConvertUtils.escapeTextNode(s));
             }
             if (m_sbCollectSignature != null)

@@ -10,7 +10,6 @@
 
 package org.digidoc4j;
 
-import com.sun.javafx.binding.StringConstant;
 import eu.europa.esig.dss.client.http.Protocol;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -473,15 +472,6 @@ public class Configuration implements Serializable {
    */
   public TSLCertificateSource getTSL() {
     return tslManager.getTsl();
-  }
-
-  /**
-   * Flags that TSL signature should be validated.
-   *
-   * @return True if TSL signature should be validated, False otherwise.
-   */
-  public boolean shouldValidateTslSignature() {
-    return mode != Mode.TEST;
   }
 
   /**
@@ -1076,6 +1066,7 @@ public class Configuration implements Serializable {
    */
   public void setAllowedOcspRespondersForTM(String... allowedOcspRespondersForTM) {
     this.setConfigurationParameter(ConfigurationParameter.AllowedOcspRespondersForTM, allowedOcspRespondersForTM);
+    setDDoc4JParameter("ALLOWED_OCSP_RESPONDERS_FOR_TM", StringUtils.join(allowedOcspRespondersForTM, ","));
   }
 
   /**
