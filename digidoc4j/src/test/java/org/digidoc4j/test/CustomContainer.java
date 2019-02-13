@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import org.bouncycastle.tsp.TimeStampToken;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.Container;
 import org.digidoc4j.ContainerValidationResult;
@@ -96,6 +97,11 @@ public class CustomContainer implements Container {
   }
 
   @Override
+  public DataFile addDataFile(byte[] byteArray, String fileName, String mimeType) {
+    return null;
+  }
+
+  @Override
   public DataFile addDataFile(File file, String mimeType) {
     return null;
   }
@@ -155,7 +161,7 @@ public class CustomContainer implements Container {
   }
 
   @Override
-  public DataFile getTimeStampToken() {
+  public TimeStampToken getTimeStampToken() {
     throw new NotYetImplementedException();
   }
 

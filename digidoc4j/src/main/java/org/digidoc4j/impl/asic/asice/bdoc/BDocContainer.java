@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bouncycastle.tsp.TimeStampToken;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.Constant;
 import org.digidoc4j.DataFile;
@@ -107,7 +108,7 @@ public class BDocContainer extends AsicEContainer {
   }
 
   @Override
-  public DataFile getTimeStampToken() {
+  public TimeStampToken getTimeStampToken() {
     throw new NotSupportedException("Not for BDOC container");
   }
 }

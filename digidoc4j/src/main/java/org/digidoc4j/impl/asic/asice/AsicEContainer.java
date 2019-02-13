@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.digidoc4j.*;
 import org.digidoc4j.exceptions.NotSupportedException;
+import org.bouncycastle.tsp.TimeStampToken;
 import org.digidoc4j.impl.asic.AsicContainer;
 import org.digidoc4j.impl.asic.AsicContainerCreator;
 import org.digidoc4j.utils.Helper;
@@ -147,7 +148,7 @@ public class AsicEContainer extends AsicContainer {
   }
 
   @Override
-  public DataFile getTimeStampToken() {
+  public TimeStampToken getTimeStampToken() {
     throw new NotSupportedException("Not for ASiC-E container");
   }
 }

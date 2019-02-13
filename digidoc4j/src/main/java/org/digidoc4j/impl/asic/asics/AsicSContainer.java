@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.tsp.TimeStampToken;
 import org.digidoc4j.*;
+import org.digidoc4j.exceptions.DigiDoc4JException;
 import org.digidoc4j.exceptions.InvalidSignatureException;
 import org.digidoc4j.exceptions.NotSupportedException;
 import org.digidoc4j.impl.asic.AsicContainer;
@@ -71,8 +74,13 @@ public class AsicSContainer extends AsicContainer {
   }
 
   @Override
-  public DataFile getTimeStampToken() {
-    return timeStampToken;
+  public TimeStampToken getTimeStampToken() {
+    try{
+      return new TimeStampToken(new CMSSignedData(timeStampToken.getBytes()));
+    } catch (Exception e){
+      logger.error("TIMESTAMP TOKEN PARSE FAILED! " + e.getMessage());
+      throw new DigiDoc4JException(e);
+    }
   }
 
   @Override
