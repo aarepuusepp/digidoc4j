@@ -21,7 +21,6 @@ import eu.europa.esig.dss.validation.policy.rules.SubIndication;
 /**
  * Created by Andrei on 20.11.2017.
  */
-
 public class PadesValidationTest extends AbstractTest {
 
   @Rule
@@ -50,7 +49,7 @@ public class PadesValidationTest extends AbstractTest {
             fromExistingFile("src/test/resources/prodFiles/invalid-containers/PadesProfileT.pdf").build();
     SignatureValidationResult result = container.validate();
     Assert.assertFalse(result.isValid());
-    TestAssert.assertContainsError("No revocation data for the certificate", result.getErrors());
+    TestAssert.assertContainsError("The result of the LTV validation process is not acceptable to continue the process!", result.getErrors());
   }
 
   @Test
