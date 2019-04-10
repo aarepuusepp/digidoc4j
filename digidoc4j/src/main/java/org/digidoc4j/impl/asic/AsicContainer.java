@@ -1,16 +1,16 @@
+/* DigiDoc4J library
+ *
+ * This software is released under either the GNU Library General Public
+ * License (see LICENSE.LGPL).
+ *
+ * Note that the only valid version of the LGPL license as far as this
+ * project is concerned is the original GNU Library General Public License
+ * Version 2.1, February 1999
+ */
+
 package org.digidoc4j.impl.asic;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import eu.europa.esig.dss.DSSDocument;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.cms.CMSSignedData;
@@ -43,11 +43,22 @@ import org.digidoc4j.impl.asic.asics.AsicSContainerValidator;
 import org.digidoc4j.impl.asic.asics.AsicSSignature;
 import org.digidoc4j.impl.asic.manifest.AsicManifest;
 import org.digidoc4j.impl.asic.xades.SignatureExtender;
+import org.digidoc4j.impl.asic.xades.XadesSignature;
+import org.digidoc4j.impl.asic.xades.XadesSignatureWrapper;
 import org.digidoc4j.utils.Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.europa.esig.dss.DSSDocument;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Andrei on 7.11.2017.
@@ -135,6 +146,19 @@ public abstract class AsicContainer implements Container {
     this.openContainer(stream);
   }
 
+  /**
+   * ASicContainer constructor
+   *
+   * @param containerParseResult container parsed result
+   * @param configuration configuration
+   * @param containerType container type
+   */
+  public AsicContainer(AsicParseResult containerParseResult, Configuration configuration, String containerType) {
+    this.configuration = configuration;
+    this.containerType = containerType;
+    this.populateContainerWithParseResult(containerParseResult);
+  }
+
   @Override
   public ContainerValidationResult validate() {
     if (this.validationResult == null) {
@@ -199,8 +223,15 @@ public abstract class AsicContainer implements Container {
     return configuration;
   }
 
-  protected abstract List<Signature> parseSignatureFiles(List<DSSDocument> signatureFiles,
-                                                         List<DSSDocument> detachedContents);
+  private List<Signature> openSignatures(List<XadesSignatureWrapper> signatureWrappers) {
+    List<Signature> signatures = new ArrayList<>(signatureWrappers.size());
+    for (XadesSignatureWrapper signatureWrapper : signatureWrappers) {
+      signatures.add(getSignatureOpener().open(signatureWrapper));
+    }
+    return signatures;
+  }
+
+  protected abstract AsicSignatureOpener getSignatureOpener();
 
   @Override
   public InputStream saveAsStream() {
@@ -235,9 +266,21 @@ public abstract class AsicContainer implements Container {
     List<DSSDocument> detachedContentList = detachedContentCreator.getDetachedContentList();
     SignatureExtender signatureExtender = new SignatureExtender(getConfiguration(), detachedContentList);
     List<DSSDocument> extendedSignatureDocuments = signatureExtender.extend(signatures, profile);
-    List<Signature> extendedSignatures = parseSignatureFiles(extendedSignatureDocuments, detachedContentList);
+
+    List<XadesSignatureWrapper> parsedSignatures = parseSignaturesWrappers(extendedSignatureDocuments, detachedContentList);
+    List<Signature> extendedSignatures = openSignatures(parsedSignatures);
     LOGGER.debug("Finished extending all signatures");
     return extendedSignatures;
+  }
+
+  private List<XadesSignatureWrapper> parseSignaturesWrappers(List<DSSDocument> signatureDocuments, List<DSSDocument> detachedContent) {
+    AsicSignatureParser signatureParser = new AsicSignatureParser(detachedContent, configuration);
+    List<XadesSignatureWrapper> parsedSignatures = new ArrayList<>();
+    for (DSSDocument signatureDocument : signatureDocuments) {
+      XadesSignature signature = signatureParser.parse(signatureDocument);
+      parsedSignatures.add(new XadesSignatureWrapper(signature, signatureDocument));
+    }
+    return parsedSignatures;
   }
 
   protected void validateDataFilesRemoval() {
@@ -294,10 +337,10 @@ public abstract class AsicContainer implements Container {
     this.containerParseResult = parseResult;
     this.dataFiles.addAll(parseResult.getDataFiles());
     this.timeStampToken = parseResult.getTimeStampToken();
-    this.signatures.addAll(this.parseSignatureFiles(parseResult.getSignatures(), parseResult.getDetachedContents()));
+    this.signatures.addAll(this.openSignatures(parseResult.getSignatures()));
   }
 
-  private void removeExistingSignature(BDocSignature signature) {
+  private void removeExistingSignature(AsicSignature signature) {
     DSSDocument signatureDocument = signature.getSignatureDocument();
     if (signatureDocument == null) {
       return;
@@ -324,7 +367,7 @@ public abstract class AsicContainer implements Container {
   private void removeAllExistingSignaturesFromContainer() {
     LOGGER.debug("Removing all existing signatures");
     for (Signature signature : signatures) {
-      removeExistingSignature((BDocSignature) signature);
+      removeExistingSignature((AsicSignature) signature);
     }
   }
 
@@ -429,11 +472,6 @@ public abstract class AsicContainer implements Container {
     }
   }
 
-  private byte[] getDigest() {
-    DataFile dataFile = getDataFiles().get(0);
-    return dataFile.getBytes();
-  }
-
   /**
    * Controlls if timestamp token is defined
    *
@@ -477,7 +515,7 @@ public abstract class AsicContainer implements Container {
       boolean wasIncludedInContainer = signatures.remove(signature);
       if (wasIncludedInContainer && !wasNewlyAddedSignature) {
         LOGGER.debug("This signature was included in the container before the container was opened");
-        removeExistingSignature((BDocSignature) signature);
+        removeExistingSignature((AsicSignature) signature);
       }
     } else {
       signatures.remove(signature);
@@ -725,5 +763,9 @@ public abstract class AsicContainer implements Container {
   @Deprecated
   public void setSignatureProfile(SignatureProfile profile) {
     throw new NotSupportedException("Setting signature profile method is not supported by Asic container");
+  }
+
+  public AsicParseResult getContainerParseResult() {
+    return containerParseResult;
   }
 }

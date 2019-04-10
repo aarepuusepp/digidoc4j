@@ -112,17 +112,54 @@ public class AsicEContainerValidator implements Serializable {
 
   protected void extractValidatedSignatureErrors(List<Future<SignatureValidationData>> validationFutures) {
     logger.debug("Extracting errors from the signatures");
+    if(validationFutures == null){
+      logger.error("validationFutures list is NULL!");
+    } else {
+      logger.debug("validationFutures list size: " + validationFutures.size());
+    }
+
     for (Future<SignatureValidationData> validationFuture : validationFutures) {
       try {
-        SignatureValidationData validationData = validationFuture.get();
-        extractSignatureErrors(validationData);
-      } catch (InterruptedException | ExecutionException e) {
+        if(validationFuture == null){
+          logger.debug("validationFuture is NULL!");
+        }
+        SignatureValidationData validationData = signValidData(validationFuture);
+        logger.debug("Extract signature errors...");
+        logger.debug("-------------------------------------------------------------");
+        logger.debug("EXTRACT SIGNATURE ERRORS..... START");
+        logger.debug("-------------------------------------------------------------");
+        if(validationData == null){
+          logger.error("SignatureValidationData is NULL!");
+          throw new TechnicalException("Error validating signatures on multiple threads: ");
+        } else {
+          extractSignatureErrors(validationData);
+        }
+
+        logger.debug("-------------------------------------------------------------");
+        logger.debug("EXTRACT SIGNATURE ERRORS..... END");
+        logger.debug("-------------------------------------------------------------");
+      } catch (Exception e) {
         logger.error("Error validating signatures on multiple threads: " + e.getMessage());
         throw new TechnicalException("Error validating signatures on multiple threads: " + e.getMessage(), e);
       }
     }
   }
 
+  SignatureValidationData signValidData(Future<SignatureValidationData> validationFuture){
+    try{
+      logger.debug("-------------------------------------------------------------");
+      logger.debug("GET VALIDATION FUTURE DATA..... START");
+      logger.debug("-------------------------------------------------------------");
+      SignatureValidationData validationData = validationFuture.get();
+      logger.debug("-------------------------------------------------------------");
+      logger.debug("GET VALIDATION FUTURE DATA..... END");
+      logger.debug("-------------------------------------------------------------");
+      return validationData;
+    } catch (Exception e){
+      logger.error(e.getMessage(), e);
+    }
+    return null;
+  }
   /**
    * @param validateManifest validate manifest flag
    */
