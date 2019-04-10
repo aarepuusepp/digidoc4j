@@ -123,10 +123,15 @@ public class XadesValidationReportGenerator implements Serializable {
 
   private void print() {
     if (this.log.isTraceEnabled()) {
-      this.log.trace("----------------Validation report---------------");
-      this.log.trace(this.reports.getXmlDetailedReport());
-      this.log.trace("----------------Simple report-------------------");
-      this.log.trace(this.reports.getXmlSimpleReport());
+      if(this.reports != null){
+        this.log.trace("----------------Validation report---------------");
+        this.log.trace(this.reports.getXmlDetailedReport());
+        this.log.trace("----------------Simple report-------------------");
+        this.log.trace(this.reports.getXmlSimpleReport());
+      } else {
+        this.log.trace("----------------Validation report---------------");
+        this.log.error("REPORTS IS NULL!!!");
+      }
     }
   }
 
